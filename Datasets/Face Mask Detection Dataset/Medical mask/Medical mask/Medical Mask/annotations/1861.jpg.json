@@ -17,19 +17,6 @@
         },
         {
             "isProtected": false,
-            "ID": 211797538039653280,
-            "BoundingBox": [
-                582,
-                126,
-                582,
-                126
-            ],
-            "classname": "face_with_mask_incorrect",
-            "Confidence": 1,
-            "Attributes": {}
-        },
-        {
-            "isProtected": false,
             "ID": 248677733460168320,
             "BoundingBox": [
                 542,
