@@ -151,3 +151,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 Faster R-CNN/mask_detection_model.pth
+Faster R-CNN/Models/Full dataset all classes 10 epochs.pth
