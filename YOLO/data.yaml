@@ -1,4 +1,5 @@
-train: dataset/images
-val: dataset/images
+train: ../yolov5/dataset/images/train/
+val: ../yolov5/dataset/images/val/
+test: ../yolov5/dataset/images/test/
 nc: 20
 names: ['face_no_mask', 'face_with_mask', 'mask_surgical', 'hat', 'eyeglasses', 'face_other_covering', 'face_with_mask_incorrect', 'mask_colorful', 'helmet', 'sunglasses', 'scarf_bandana', 'hair_net', 'goggles', 'face_shield', 'hijab_niqab', 'turban', 'balaclava_ski_mask', 'gas_mask', 'hood', 'other']
