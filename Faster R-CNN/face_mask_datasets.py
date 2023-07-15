@@ -1,8 +1,6 @@
 import os
-import PIL.Image as Image
+import warnings
 
-import cv2
-import numpy as np
 import torch
 import torchvision.transforms.functional as F
 import os
@@ -10,30 +8,26 @@ import json
 import PIL.Image
 import xml.etree.ElementTree as ET
 import torch
-from torchvision.models.detection import fasterrcnn_resnet50_fpn
-from torchvision.transforms import transforms
-from torchvision.datasets import CocoDetection
-from torch.utils.data import DataLoader
-from torch.optim import SGD
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import torch
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.transforms import functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import json
 import PIL.Image
-from matplotlib import pyplot as plt
 
 class MaskDetectionDatasetJSON(Dataset):
-    def __init__(self, root_dir,class_label_map, target_size=(512, 512), allowed_classes=[3,4,5,6], only_single_faces=False, ):
+    def __init__(self, root_dir,class_label_map, target_size=(512, 512), allowed_classes=[3,4,5,6], only_single_faces=False, only_multiple_faces=False ):
         self.root_dir = root_dir
         self.class_label_map = class_label_map
         self.annotations = []
         self.target_size = target_size
-        self.load_annotations(allowed_classes, only_single_faces)
+        self.only_single_faces = only_single_faces
+        self.only_multiple_faces = only_multiple_faces
+        if(self.only_single_faces and self.only_multiple_faces):
+            raise ValueError("only_single_faces and only_multiple_faces cannot both be true\n Only one of them can be true")
+        
+        self.load_annotations(allowed_classes)
 
-    def load_annotations(self, allowed_classes=[3,4,5,6], only_single_faces=False):
+    def load_annotations(self, allowed_classes=[3,4,5,6]):
         annotation_files = os.listdir(f"{self.root_dir}/annotations")
         for file_name in annotation_files:
             with open(f"{self.root_dir}/annotations/{file_name}", "r") as f:
@@ -44,15 +38,27 @@ class MaskDetectionDatasetJSON(Dataset):
                 allowed_classnames = [key for key, value in self.class_label_map.items() if value in allowed_classes]
                 face_classes = ["face_no_mask", "face_with_mask_incorrect", "face_with_mask", "face_other_covering"]
                 annotations = [annotation for annotation in annotations if annotation["classname"] in allowed_classnames]
-                if only_single_faces:
+
+                if self.only_single_faces:
                     #check if multiple of the face_classes are present in the annotations, indicating multiple faces
                     face_annotations = [annotation for annotation in annotations if annotation["classname"] in face_classes]
                     if len(face_annotations) > 1:
                         continue 
-                    self.annotations.append((annotations, file_name))       
-                else:
-                    if(len(annotations) > 0):
+                    self.annotations.append((annotations, file_name))
+
+                elif self.only_multiple_faces:
+                    #check if multiple of the face_classes are present in the annotations, indicating multiple faces
+                    face_annotations = [annotation for annotation in annotations if annotation["classname"] in face_classes]
+                    if len(face_annotations) <= 1:
+                        continue
+                    else:
                         self.annotations.append((annotations, file_name))
+
+                else:
+                    if(annotations == []):
+                        warnings.warn(f"File {file_name} has no annotations")
+                        continue
+                    self.annotations.append((annotations, file_name))
                 # Check if the boxes are valid
                 for annotation in annotations:
                     boxes = annotation["BoundingBox"]
