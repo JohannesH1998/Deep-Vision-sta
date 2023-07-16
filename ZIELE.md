@@ -9,6 +9,14 @@ Schritt 1:
         
 -> Besseres Modell aussuchen (alle klassen oder nur face-klassen)
 
+
+Schritt 2:
+    Training beide modelle auf xml datensatz
+
+Schritt 3:
+    training auf beiede modelle xml datensatz dunkel
+
+
 Schritt 2:
 
     Mit besserem Modell vortfahren
