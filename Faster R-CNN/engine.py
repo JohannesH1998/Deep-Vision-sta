@@ -7,6 +7,7 @@ import torchvision.models.detection.mask_rcnn
 import utils
 from coco_eval import CocoEvaluator
 from coco_utils import get_coco_api_from_dataset
+import tmpTests
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, scaler=None, losses_out=[]):
@@ -25,6 +26,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, sc
         )
 
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
+        #tmpTests.visTargets(images, targets)
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         with torch.cuda.amp.autocast(enabled=scaler is not None):

@@ -15,7 +15,8 @@ import json
 import PIL.Image
 
 class MaskDetectionDatasetJSON(Dataset):
-    def __init__(self, root_dir,class_label_map, target_size=(512, 512), allowed_classes=[3,4,5,6], only_single_faces=False, only_multiple_faces=False ):
+    def __init__(self, root_dir,class_label_map, target_size=(512, 512), only_single_faces=False, only_multiple_faces=False ):
+        print("dataset init")
         self.root_dir = root_dir
         self.class_label_map = class_label_map
         self.annotations = []
@@ -25,24 +26,26 @@ class MaskDetectionDatasetJSON(Dataset):
         if(self.only_single_faces and self.only_multiple_faces):
             raise ValueError("only_single_faces and only_multiple_faces cannot both be true\n Only one of them can be true")
         
-        self.load_annotations(allowed_classes)
+        self.load_annotations()
 
-    def load_annotations(self, allowed_classes=[3,4,5,6]):
+    def load_annotations(self):
         annotation_files = os.listdir(f"{self.root_dir}/annotations")
         for file_name in annotation_files:
             with open(f"{self.root_dir}/annotations/{file_name}", "r") as f:
                 annotation_data = json.load(f)
                 annotations = annotation_data["Annotations"]
                 file_name = annotation_data["FileName"]
-                #get the allowed class names from the keys of the CLASS_LABELS dictionary
+                #get the allowed class names from the keys of the class_label_map dictionary
+                allowed_classes = self.class_label_map.values()      
                 allowed_classnames = [key for key, value in self.class_label_map.items() if value in allowed_classes]
+                #print("allowed classnames: ", allowed_classnames)
                 face_classes = ["face_no_mask", "face_with_mask_incorrect", "face_with_mask", "face_other_covering"]
                 annotations = [annotation for annotation in annotations if annotation["classname"] in allowed_classnames]
 
                 if self.only_single_faces:
                     #check if multiple of the face_classes are present in the annotations, indicating multiple faces
                     face_annotations = [annotation for annotation in annotations if annotation["classname"] in face_classes]
-                    if len(face_annotations) > 1:
+                    if len(face_annotations) != 1:
                         continue 
                     self.annotations.append((annotations, file_name))
 
@@ -119,6 +122,7 @@ class MaskDetectionDatasetXML(Dataset):
         self.root_dir = root_dir
         self.annotations = []
         self.target_size = target_size
+        self.use_dark_images = use_dark_images
         self.load_annotations()
 
     def load_annotations(self):
@@ -151,6 +155,9 @@ class MaskDetectionDatasetXML(Dataset):
         annotations = self.annotations[idx][0]
         file_name = self.annotations[idx][1]
         image_path = f"{self.root_dir}/images/{file_name}"
+
+        if(self.use_dark_images):
+            image_path = f"{self.root_dir}/dark/images/{file_name}"
         image = PIL.Image.open(image_path).convert("RGB")
         original_image_width, original_image_height = image.size
         image = F.resize(image, self.target_size)

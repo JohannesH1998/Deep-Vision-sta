@@ -152,3 +152,4 @@ cython_debug/
 #.idea/
 Faster R-CNN/mask_detection_model.pth
 Faster R-CNN/Models/Full dataset all classes 10 epochs.pth
+*.pth
