@@ -15,7 +15,25 @@ import json
 import PIL.Image
 
 class MaskDetectionDatasetJSON(Dataset):
+    """
+    This is a custom dataset class for the mask detection dataset suited for the JSON annotations.
+    It implements the abstract methods from the PyTorch Dataset class.
+    It is suitable for use with the PyTorch DataLoader class and made for the Faster R-CNN model.
+    """
+
+
     def __init__(self, root_dir,class_label_map, target_size=(512, 512), only_single_faces=False, only_multiple_faces=False ):
+        """
+        root_dir: The root directory of the dataset
+        class_label_map: A dictionary mapping the class names to class labels
+        target_size: The target size of the images.
+        only_single_faces: If true, only images with a single face will be present in the dataset
+        only_multiple_faces: If true, only images with multiple faces will be present in the dataset
+
+        The images are not loaded directly, but only the annotations are loaded.
+        When a item is requested in the __getitem__ method, the image is loaded and the annotations are applied to the image.
+        """
+
         print("dataset init")
         self.root_dir = root_dir
         self.class_label_map = class_label_map
@@ -29,6 +47,12 @@ class MaskDetectionDatasetJSON(Dataset):
         self.load_annotations()
 
     def load_annotations(self):
+        """
+        load the annotations from the json files in the annotations folder.
+        This method is called in the constructor of the class.
+        The annotations are stored in the self.annotations list and represent the dataset.
+        """
+
         annotation_files = os.listdir(f"{self.root_dir}/annotations")
         for file_name in annotation_files:
             with open(f"{self.root_dir}/annotations/{file_name}", "r") as f:
@@ -73,6 +97,14 @@ class MaskDetectionDatasetJSON(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, idx):
+        """
+        method to get a single item from the dataset.
+        This method is called by the PyTorch DataLoader class.
+        It returns a tuple of the image and the target.
+        The target is a dictionary containing the bounding boxes and the class labels.
+        Also converts output to tensor to be ready for use in the model.
+        """
+
         annotations = self.annotations[idx][0]
         file_name = self.annotations[idx][1]
         image_path = f"{self.root_dir}/images/{file_name}"
@@ -105,6 +137,8 @@ class MaskDetectionDatasetJSON(Dataset):
         target = {}
         target["boxes"] = boxes
         target["labels"] = labels
+
+        #could be used for evaluation currently unused
         target["area"] = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
         target["iscrowd"] = torch.zeros((boxes.shape[0],), dtype=torch.int64)
         target["image_id"] = torch.tensor([idx])
@@ -117,6 +151,12 @@ class MaskDetectionDatasetJSON(Dataset):
 
 
 class MaskDetectionDatasetXML(Dataset):
+    """
+    This is a custom dataset class for the mask detection dataset suited for the XML annotations.
+    It implements the abstract methods from the PyTorch Dataset class.
+    It is suitable for use with the PyTorch DataLoader class and made for the Faster R-CNN model.
+    """
+
     def __init__(self, root_dir,class_label_map, target_size=(512,512), use_dark_images=False):
         self.class_label_map = class_label_map
         self.root_dir = root_dir
@@ -126,6 +166,12 @@ class MaskDetectionDatasetXML(Dataset):
         self.load_annotations()
 
     def load_annotations(self):
+        """
+        load the annotations from the json files in the annotations folder.
+        This method is called in the constructor of the class.
+        The annotations are stored in the self.annotations list and represent the dataset.
+        """
+        
         annotation_files = os.listdir(f"{self.root_dir}/annotations")
         for file_name in annotation_files:
             with open(f"{self.root_dir}/annotations/{file_name}", "r") as f:
@@ -152,6 +198,14 @@ class MaskDetectionDatasetXML(Dataset):
         return len(self.annotations)
     
     def __getitem__(self, idx):
+        """
+        method to get a single item from the dataset.
+        This method is called by the PyTorch DataLoader class.
+        It returns a tuple of the image and the target.
+        The target is a dictionary containing the bounding boxes and the class labels.
+        Also converts output to tensor to be ready for use in the model.
+        """
+                
         annotations = self.annotations[idx][0]
         file_name = self.annotations[idx][1]
         image_path = f"{self.root_dir}/images/{file_name}"
